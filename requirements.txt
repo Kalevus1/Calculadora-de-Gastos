@@ -1,0 +1,3 @@
+# Librerías para la Calculadora de Gastos (Python 3.12)
+# QtPrintSupport (exportar a PDF) viene incluido con PySide6.
+PySide6==6.11.1
