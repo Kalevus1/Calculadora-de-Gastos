@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Gastos Compartidos</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+            min-height: 100vh; padding: 1rem; color: #1f2937;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,.1); padding: 1.5rem; margin-bottom: 1.5rem; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .title { display: flex; align-items: center; gap: .75rem; }
+        .title h1 { font-size: 1.75rem; font-weight: bold; }
+        .title-icon { width: 2rem; height: 2rem; color: #4f46e5; }
+        .buttons { display: flex; gap: .5rem; }
+        .btn { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem; border-radius: .5rem; font-weight: 600; cursor: pointer; transition: all .2s; border: none; font-size: .875rem; }
+        .btn-success { background: #059669; color: white; }
+        .btn-success:hover { background: #047857; }
+        .btn-ghost { background: white; color: #6b7280; border: 1px solid #d1d5db; }
+        .btn-ghost:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+        .settings-panel { background: linear-gradient(to right, #eef2ff, #f3e8ff); padding: 1.5rem; border-radius: .75rem; margin-bottom: 1.5rem; border: 1px solid #c7d2fe; }
+        .settings-header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .settings-title { display: flex; align-items: center; gap: .5rem; }
+        .settings-header h3 { font-size: 1.125rem; font-weight: bold; }
+        .settings-icon { width: 1.25rem; height: 1.25rem; color: #4f46e5; }
+        .person-inputs { display: flex; flex-direction: column; gap: .75rem; }
+        .person-row { display: flex; gap: .5rem; }
+        .person-input { flex: 1; padding: .5rem 1rem; border: 1px solid #d1d5db; border-radius: .5rem; font-size: .875rem; }
+        .person-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79,70,229,.2); }
+        .remove-btn { padding: .5rem; background: #fecaca; color: #dc2626; border-radius: .5rem; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
+        .remove-btn:hover { background: #fca5a5; }
+        .add-person-btn { display: flex; align-items: center; gap: .4rem; padding: .45rem .9rem; background: #4f46e5; color: white; border-radius: .5rem; cursor: pointer; border: none; font-weight: 600; font-size: .8rem; }
+        .add-person-btn:hover { background: #4338ca; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (min-width: 768px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+        .form-group { display: flex; flex-direction: column; gap: .5rem; }
+        .form-label { font-size: .875rem; font-weight: 600; color: #374151; }
+        .form-input, .form-select { padding: .5rem 1rem; border: 1px solid #d1d5db; border-radius: .5rem; font-size: .875rem; }
+        .form-input:focus, .form-select:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79,70,229,.2); }
+        .split-section { margin: 1.5rem 0; }
+        .split-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+        .split-label { display: flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; color: #374151; }
+        .split-actions { display: flex; gap: .5rem; }
+        .split-action-btn { padding: .25rem .75rem; background: #e5e7eb; color: #374151; border-radius: .25rem; cursor: pointer; border: none; font-size: .75rem; }
+        .split-action-btn:hover { background: #d1d5db; }
+        .split-action-btn.primary { background: #e0e7ff; color: #4f46e5; }
+        .split-action-btn.primary:hover { background: #c7d2fe; }
+        .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; }
+        .person-checkbox { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem; background: #f9fafb; border-radius: .5rem; cursor: pointer; transition: background-color .2s; }
+        .person-checkbox:hover { background: #eef2ff; }
+        .person-checkbox.checked { background: #e0e7ff; }
+        .checkbox-input { width: 1rem; height: 1rem; cursor: pointer; }
+        .person-name { font-size: .875rem; font-weight: 500; color: #374151; }
+        .add-expense-btn { width: 100%; padding: .75rem; background: #4f46e5; color: white; border-radius: .5rem; font-weight: 600; cursor: pointer; border: none; transition: background-color .2s; }
+        .add-expense-btn:hover { background: #4338ca; }
+        .add-expense-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+        .content-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 768px) { .content-grid { grid-template-columns: 1fr 1fr; } }
+        .expenses-section, .debts-section { background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,.1); padding: 1.5rem; }
+        .section-header { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+        .section-header h2 { font-size: 1.25rem; font-weight: bold; }
+        .section-icon { width: 1.5rem; height: 1.5rem; }
+        .expenses-icon { color: #4f46e5; }
+        .debts-icon { color: #059669; }
+        .empty-state { text-align: center; color: #6b7280; padding: 1.5rem; background: #f3f4ff; border-radius: .5rem; }
+        .expense-item { background: #f9fafb; padding: 1rem; border-radius: .5rem; border: 1px solid #e5e7eb; margin-bottom: 1rem; }
+        .expense-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .5rem; }
+        .expense-description { font-weight: 600; margin-bottom: .25rem; }
+        .expense-paid-by { font-size: .875rem; color: #6b7280; }
+        .expense-amount { font-size: 1.125rem; font-weight: bold; color: #4f46e5; }
+        .expense-details { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+        .expense-split { font-size: .75rem; color: #6b7280; }
+        .expense-breakdown { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid #e5e7eb; }
+        .breakdown-title { font-size: .75rem; font-weight: 600; color: #374151; margin-bottom: .5rem; }
+        .breakdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5rem; }
+        .breakdown-item { background: white; padding: .5rem; border-radius: .25rem; border: 1px solid #e5e7eb; font-size: .75rem; }
+        .breakdown-amount { color: #4f46e5; font-weight: 600; }
+        .expenses-total { margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #c7d2fe; display: flex; justify-content: space-between; align-items: center; }
+        .total-label { font-size: 1.125rem; font-weight: bold; }
+        .total-amount { font-size: 1.5rem; font-weight: bold; color: #4f46e5; }
+        .debt-item { background: linear-gradient(to right, #d1fae5, #a7f3d0); padding: 1rem; border-radius: .5rem; border-left: 4px solid #10b981; margin-bottom: 1rem; }
+        .debt-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+        .debt-from, .debt-to { font-weight: bold; color: #374151; }
+        .debt-arrow { color: #6b7280; margin: 0 .5rem; }
+        .debt-amount { font-size: 1.5rem; font-weight: bold; color: #059669; }
+        .hidden-mobile { display: inline; }
+        @media (max-width: 640px) { .hidden-mobile { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="title">
+                    <i data-lucide="dollar-sign" class="title-icon"></i>
+                    <h1>Calculadora de Gastos</h1>
+                </div>
+                <div class="buttons">
+                    <button id="clearAllBtn" class="btn btn-ghost">
+                        <i data-lucide="trash" class="icon"></i>
+                        <span class="hidden-mobile">Limpiar todo</span>
+                    </button>
+                    <button id="downloadPDF" class="btn btn-success" style="display:none;">
+                        <i data-lucide="download" class="icon"></i>
+                        <span class="hidden-mobile">Descargar PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-panel">
+                <div class="settings-header">
+                    <div class="settings-title">
+                        <i data-lucide="users" class="settings-icon"></i>
+                        <h3>Participantes (<span id="peopleCount">5</span>)</h3>
+                    </div>
+                    <button id="addPersonBtn" class="add-person-btn">
+                        <i data-lucide="plus" class="icon"></i> Agregar Persona
+                    </button>
+                </div>
+                <div id="personInputs" class="person-inputs"></div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Descripción del gasto</label>
+                    <input type="text" id="expenseDescription" class="form-input" placeholder="Ej: Cena en restaurante">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monto (S/.)</label>
+                    <input type="number" id="expenseAmount" class="form-input" placeholder="0.00" step="0.01">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">¿Quién pagó?</label>
+                <select id="paidBy" class="form-select"></select>
+            </div>
+
+            <div class="split-section">
+                <div class="split-header">
+                    <div class="split-label">
+                        <i data-lucide="users" class="icon"></i>
+                        <span>¿Para quiénes es el gasto?</span>
+                    </div>
+                    <div class="split-actions">
+                        <button id="selectAllBtn" class="split-action-btn primary">Todos</button>
+                        <button id="deselectAllBtn" class="split-action-btn">Ninguno</button>
+                    </div>
+                </div>
+                <div id="peopleCheckboxes" class="people-grid"></div>
+            </div>
+
+            <button id="addExpenseBtn" class="add-expense-btn" disabled>Agregar Gasto</button>
+        </div>
+
+        <div class="content-grid">
+            <div class="expenses-section">
+                <div class="section-header">
+                    <i data-lucide="dollar-sign" class="section-icon expenses-icon"></i>
+                    <h2>Gastos Registrados</h2>
+                </div>
+                <div id="expensesList"></div>
+                <div id="expensesTotal" class="expenses-total" style="display:none;">
+                    <span class="total-label">Total:</span>
+                    <span class="total-amount">S/. 0.00</span>
+                </div>
+            </div>
+
+            <div class="debts-section">
+                <div class="section-header">
+                    <i data-lucide="calculator" class="section-icon debts-icon"></i>
+                    <h2>¿Quién debe a quién?</h2>
+                </div>
+                <div id="debtsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const MON = "S/.";
+
+        // persona = {id, name}; name vacío => se muestra "Persona N" por posición
+        let state = {
+            people: [1, 2, 3, 4, 5].map(i => ({ id: i, name: "" })),
+            nextId: 6,
+            expenses: [],
+            newExpense: { description: "", amount: "", paidBy: 1, split: [1, 2, 3, 4, 5] }
+        };
+
+        const el = id => document.getElementById(id);
+
+        // ---- persistencia (localStorage) ----
+        const LS_KEY = "calculadoraGastos.estado";
+        function guardar() {
+            try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+        }
+        function cargar() {
+            try {
+                const raw = localStorage.getItem(LS_KEY);
+                if (!raw) return;
+                const d = JSON.parse(raw);
+                if (d && Array.isArray(d.people) && d.people.length) state = d;
+            } catch (e) {}
+        }
+        function limpiarTodo() {
+            const hayDatos = state.expenses.length || state.people.some(p => (p.name || "").trim());
+            if (hayDatos && !confirm("¿Borrar todos los participantes y gastos y empezar de cero?")) return;
+            state = {
+                people: [1, 2, 3, 4, 5].map(i => ({ id: i, name: "" })),
+                nextId: 6, expenses: [],
+                newExpense: { description: "", amount: "", paidBy: 1, split: [1, 2, 3, 4, 5] }
+            };
+            el('expenseDescription').value = ''; el('expenseAmount').value = '';
+            guardar();
+            renderPeople(); renderPaidBy(); renderCheckboxes(); renderExpenses(); renderDebts(); updateButton();
+        }
+
+        function display(index) {
+            const p = state.people[index];
+            return (p.name || "").trim() || `Persona ${index + 1}`;
+        }
+        function nombreDe(pid) {
+            const i = state.people.findIndex(p => p.id === pid);
+            return i >= 0 ? display(i) : "?";
+        }
+
+        // reparte 'monto' entre n en CÉNTIMOS enteros que suman exacto (nada se pierde)
+        function cuotasCent(monto, n) {
+            const cent = Math.round(monto * 100);
+            const base = Math.floor(cent / n);
+            const resto = cent - base * n;
+            return Array.from({ length: n }, (_, k) => base + (k < resto ? 1 : 0));
+        }
+
+        // ---- liquidación por saldos netos (en céntimos enteros, pocas transferencias) ----
+        function liquidar() {
+            const saldo = {};
+            state.people.forEach(p => saldo[p.id] = 0);
+            state.expenses.forEach(exp => {
+                const parts = exp.split.filter(p => p in saldo);
+                const n = parts.length;
+                if (n === 0) return;
+                const cuotas = cuotasCent(exp.amount, n);
+                if (exp.paidBy in saldo) saldo[exp.paidBy] += Math.round(exp.amount * 100);
+                parts.forEach((p, k) => { saldo[p] -= cuotas[k]; });
+            });
+            let acre = Object.keys(saldo).map(k => [Number(k), saldo[k]]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+            let deu = Object.keys(saldo).map(k => [Number(k), -saldo[k]]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+            const res = [];
+            let i = 0, j = 0;
+            while (i < deu.length && j < acre.length) {
+                const pago = Math.min(deu[i][1], acre[j][1]);
+                if (pago > 0) res.push({ from: deu[i][0], to: acre[j][0], amount: pago / 100 });
+                deu[i][1] -= pago;
+                acre[j][1] -= pago;
+                if (deu[i][1] === 0) i++;
+                if (acre[j][1] === 0) j++;
+            }
+            return res;
+        }
+
+        function init() {
+            cargar();                                   // recupera la última sesión
+            el('expenseDescription').value = state.newExpense.description || '';
+            el('expenseAmount').value = state.newExpense.amount || '';
+            renderPeople(); renderPaidBy(); renderCheckboxes();
+            renderExpenses(); renderDebts(); updateButton();
+            listeners();
+        }
+
+        function renderPeople() {
+            el('personInputs').innerHTML = '';
+            el('peopleCount').textContent = state.people.length;
+            state.people.forEach((p, index) => {
+                const row = document.createElement('div'); row.className = 'person-row';
+                const input = document.createElement('input');
+                input.type = 'text'; input.className = 'person-input';
+                input.value = p.name;
+                input.placeholder = `Persona ${index + 1}`;               // listo para escribir
+                input.addEventListener('focus', () => input.select());     // selecciona todo al enfocar
+                input.addEventListener('input', e => updateName(p.id, e.target.value));
+                row.appendChild(input);
+                if (state.people.length > 1) {
+                    const rm = document.createElement('button'); rm.className = 'remove-btn';
+                    rm.innerHTML = '<i data-lucide="x"></i>';
+                    rm.addEventListener('click', () => removePerson(p.id));
+                    row.appendChild(rm);
+                }
+                el('personInputs').appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        function renderPaidBy() {
+            el('paidBy').innerHTML = '';
+            state.people.forEach((p, i) => {
+                const o = document.createElement('option');
+                o.value = p.id; o.textContent = display(i);
+                if (p.id === state.newExpense.paidBy) o.selected = true;
+                el('paidBy').appendChild(o);
+            });
+        }
+
+        function renderCheckboxes() {
+            el('peopleCheckboxes').innerHTML = '';
+            state.people.forEach((p, i) => {
+                const label = document.createElement('label');
+                label.className = 'person-checkbox' + (state.newExpense.split.includes(p.id) ? ' checked' : '');
+                const input = document.createElement('input');
+                input.type = 'checkbox'; input.className = 'checkbox-input';
+                input.checked = state.newExpense.split.includes(p.id);
+                input.addEventListener('change', () => toggleSplit(p.id));
+                const span = document.createElement('span');
+                span.className = 'person-name'; span.textContent = display(i);
+                label.appendChild(input); label.appendChild(span);
+                el('peopleCheckboxes').appendChild(label);
+            });
+        }
+
+        function updateName(id, name) {
+            const p = state.people.find(p => p.id === id);
+            if (p) p.name = name;
+            renderPaidBy(); renderCheckboxes(); renderExpenses(); renderDebts();
+            guardar();
+        }
+
+        function removePerson(id) {
+            if (state.people.length <= 1) return;
+            state.people = state.people.filter(p => p.id !== id);
+            const primero = state.people[0].id;
+            state.expenses = state.expenses.map(exp => ({
+                ...exp,
+                paidBy: exp.paidBy === id ? primero : exp.paidBy,
+                split: exp.split.filter(x => x !== id)
+            })).filter(exp => exp.split.length > 0);
+            state.newExpense.split = state.newExpense.split.filter(x => x !== id);
+            if (state.newExpense.paidBy === id) state.newExpense.paidBy = primero;
+            renderPeople(); renderPaidBy(); renderCheckboxes();  // se renumeran solos
+            renderExpenses(); renderDebts(); updateButton();
+            guardar();
+        }
+
+        function addPerson() {
+            if (state.people.length >= 20) return;
+            const nid = state.nextId++;
+            state.people.push({ id: nid, name: "" });
+            state.newExpense.split.push(nid);
+            renderPeople(); renderPaidBy(); renderCheckboxes(); updateButton();
+            guardar();
+        }
+
+        function toggleSplit(id) {
+            const s = state.newExpense.split;
+            state.newExpense.split = s.includes(id) ? s.filter(x => x !== id) : [...s, id];
+            renderCheckboxes(); updateButton(); guardar();
+        }
+        function selectAll() { state.newExpense.split = state.people.map(p => p.id); renderCheckboxes(); updateButton(); guardar(); }
+        function deselectAll() { state.newExpense.split = []; renderCheckboxes(); updateButton(); guardar(); }
+
+        function updateButton() {
+            const e = state.newExpense;
+            const montoOk = parseFloat(String(e.amount).replace(",", ".")) > 0;
+            el('addExpenseBtn').disabled = !(e.description.trim() && montoOk && e.split.length > 0);
+        }
+
+        function addExpense() {
+            const e = state.newExpense;
+            const monto = parseFloat(String(e.amount).replace(",", "."));
+            if (!e.description.trim() || !(monto > 0) || e.split.length === 0) return;
+            state.expenses.push({ description: e.description.trim(), amount: monto, paidBy: e.paidBy, split: [...e.split], id: Date.now() });
+            state.newExpense.description = ''; state.newExpense.amount = '';
+            el('expenseDescription').value = ''; el('expenseAmount').value = '';
+            updateButton(); renderExpenses(); renderDebts();
+            el('downloadPDF').style.display = state.expenses.length ? 'flex' : 'none';
+            guardar();
+        }
+
+        function deleteExpense(id) {
+            state.expenses = state.expenses.filter(exp => exp.id !== id);
+            renderExpenses(); renderDebts();
+            if (!state.expenses.length) el('downloadPDF').style.display = 'none';
+            guardar();
+        }
+
+        function renderExpenses() {
+            if (!state.expenses.length) {
+                el('expensesList').innerHTML = '<p class="empty-state">No hay gastos registrados aún</p>';
+                el('expensesTotal').style.display = 'none';
+                return;
+            }
+            let html = '', total = 0;
+            state.expenses.forEach(exp => {
+                total += exp.amount;
+                const per = (exp.amount / exp.split.length).toFixed(2);
+                html += `<div class="expense-item">
+                    <div class="expense-header">
+                        <div><div class="expense-description">${exp.description}</div>
+                        <div class="expense-paid-by">Pagado por: <strong>${nombreDe(exp.paidBy)}</strong></div></div>
+                        <button class="remove-btn" onclick="deleteExpense(${exp.id})"><i data-lucide="trash-2"></i></button>
+                    </div>
+                    <div class="expense-details">
+                        <div class="expense-split">Dividido entre: ${exp.split.length} · <span>${MON} ${per} c/u</span></div>
+                        <div class="expense-amount">${MON} ${exp.amount.toFixed(2)}</div>
+                    </div>
+                    <div class="expense-breakdown"><div class="breakdown-title">Desglose:</div>
+                        <div class="breakdown-grid">${exp.split.map(pid => `
+                            <div class="breakdown-item"><span>${nombreDe(pid)}:</span>
+                            <span class="breakdown-amount"> ${MON} ${per}</span></div>`).join('')}</div>
+                    </div></div>`;
+            });
+            el('expensesList').innerHTML = html;
+            el('expensesTotal').style.display = 'flex';
+            el('expensesTotal').querySelector('.total-amount').textContent = `${MON} ${total.toFixed(2)}`;
+            lucide.createIcons();
+        }
+
+        function renderDebts() {
+            const debts = liquidar();
+            if (!debts.length) {
+                el('debtsList').innerHTML = `<p class="empty-state">${state.expenses.length === 0 ? 'Agrega gastos para ver las deudas' : '¡Todo está equilibrado! 🎉'}</p>`;
+                return;
+            }
+            el('debtsList').innerHTML = debts.map(d => `
+                <div class="debt-item"><div class="debt-content">
+                    <div><span class="debt-from">${nombreDe(d.from)}</span>
+                    <span class="debt-arrow">→</span>
+                    <span class="debt-to">${nombreDe(d.to)}</span></div>
+                    <div class="debt-amount">${MON} ${d.amount.toFixed(2)}</div>
+                </div></div>`).join('');
+        }
+
+        function downloadPDF() {
+            const w = window.open('', '', 'height=800,width=800');
+            const fecha = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
+            let gastos = state.expenses.map(exp => {
+                const per = (exp.amount / exp.split.length).toFixed(2);
+                return `<div style="margin:0 0 14px;padding:12px;background:#f9fafb;border-left:4px solid #4f46e5;border-radius:8px;">
+                    <b>${exp.description}</b><br><span style="color:#6b7280">Pagado por: <b>${nombreDe(exp.paidBy)}</b> · Total: <b style="color:#4f46e5">${MON} ${exp.amount.toFixed(2)}</b></span><br>
+                    <span style="color:#6b7280">Dividido entre ${exp.split.length} (${MON} ${per} c/u): ${exp.split.map(nombreDe).join(', ')}</span></div>`;
+            }).join('');
+            const debts = liquidar();
+            let deudas = debts.length === 0 ? '<p style="text-align:center;color:#6b7280">¡Todo está equilibrado! 🎉</p>'
+                : debts.map(d => `<div style="margin:0 0 10px;padding:12px;background:#d1fae5;border-left:4px solid #10b981;border-radius:8px;"><b>${nombreDe(d.from)}</b> → <b>${nombreDe(d.to)}</b> <b style="float:right;color:#059669">${MON} ${d.amount.toFixed(2)}</b></div>`).join('');
+            const total = state.expenses.reduce((s, e) => s + e.amount, 0);
+            w.document.write(`<html><head><title>Resumen de Gastos</title></head>
+                <body style="font-family:Segoe UI,Arial;padding:40px;color:#1f2937">
+                <h1 style="color:#4f46e5">📊 Resumen de Gastos Compartidos</h1>
+                <p style="color:#6b7280">Generado el: ${fecha}</p>
+                <h2>💰 Gastos (${state.expenses.length})</h2>${gastos || '<p>Sin gastos</p>'}
+                <div style="background:#eef2ff;padding:12px;border-radius:8px;text-align:center;margin:16px 0">Total: <b style="color:#4f46e5;font-size:22px">${MON} ${total.toFixed(2)}</b></div>
+                <h2>🧮 ¿Quién debe a quién?</h2>${deudas}</body></html>`);
+            w.document.close();
+            setTimeout(() => w.print(), 250);
+        }
+
+        function listeners() {
+            el('addPersonBtn').addEventListener('click', addPerson);
+            el('expenseDescription').addEventListener('input', e => { state.newExpense.description = e.target.value; updateButton(); guardar(); });
+            el('expenseAmount').addEventListener('input', e => { state.newExpense.amount = e.target.value; updateButton(); guardar(); });
+            el('paidBy').addEventListener('change', e => { state.newExpense.paidBy = Number(e.target.value); guardar(); });
+            const bl = el('clearAllBtn'); if (bl) bl.addEventListener('click', limpiarTodo);
+            el('selectAllBtn').addEventListener('click', selectAll);
+            el('deselectAllBtn').addEventListener('click', deselectAll);
+            el('addExpenseBtn').addEventListener('click', addExpense);
+            el('downloadPDF').addEventListener('click', downloadPDF);
+        }
+
+        window.deleteExpense = deleteExpense;
+        document.addEventListener('DOMContentLoaded', init);
+        init();
+    </script>
+</body>
+</html>
