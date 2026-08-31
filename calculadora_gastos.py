@@ -1,19 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Día 7 - Calculadora de Gastos Compartidos  ·  PySide6
------------------------------------------------------
-Versión de escritorio (mejorada) de un proyecto propio que existía en HTML y
-TypeScript/React. Reparte gastos entre personas y calcula quién le debe a quién.
-
-Mejoras respecto al original:
-  · Liquidación por SALDOS NETOS (menos transferencias, resultado más limpio).
-  · Nombres como placeholder (listo para escribir) y renumeración automática.
-  · Exporta a PDF de verdad con QtPrintSupport (sin depender de internet).
-  · Todo local, sin CDNs.
-
-Ejecuta con "Calculadora.bat".
-"""
-
 import sys
 import json
 
